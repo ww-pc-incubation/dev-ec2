@@ -1,18 +1,15 @@
-module "ec2" {
-  source = "terraform-aws-modules/ec2/aws"
-  version = "3.14.2"
-
-  name = var.instance_name
-
-  tags = var.tags
+locals {
+  tags = {
+    "Name" = format("%s-%s", var.prefix_name, var.instance_name)
+  }
 }
 
-data "aws_ami" "amazon-linux" {
+data "aws_ami" "amazon_linux" {
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-kernel-5.10-hvm-*"]
+    values = ["amzn2-ami-kernel-5.10-*"]
   }
 
   filter {
@@ -24,10 +21,10 @@ data "aws_ami" "amazon-linux" {
 }
 
 resource "aws_instance" "dev" {
-  ami           = data.aws_ami.ubuntu.id
+  ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.large"
-
-  tags = var.tag
+  tags = merge(var.default_tags, local.tags)
+  name = format("%s-%s", var.prefix_name, var.instance_name)
 }
 
 variable "subnet_prv1" {

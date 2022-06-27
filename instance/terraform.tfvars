@@ -1,14 +1,14 @@
 region = "eu-west-1"
 
-tags = {
+prefix_name = "paulcarlton"
+
+default_tags = {
   "Managed by Terraform" = "True"
-  "Environment" = "CX"
-  "Owner" = "paul.carlton@weave.works"
+  "Environment" = "Production"
+  "Owner" = "Corporate IT"
 }
 
 instance_name = "dev-one"
-
-name_prefix = "paulcarlton-"
 
 ssh_key = "paul"
 
