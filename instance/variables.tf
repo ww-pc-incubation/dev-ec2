@@ -4,6 +4,9 @@ variable "region" {
 
 variable "default_tags" {
   type = map(string)
+  default = {
+    "Managed by Terraform" = "True"
+  }
 }
 
 variable "instance_name" {
@@ -26,3 +29,13 @@ variable "iam_role" {
   type = string
 }
 
+variable "subnet_private" {
+  description = "Private Subnet"
+  type = string
+}
+
+variable "availability_zone" {
+  description = "Instance availability zone"
+  type = string
+  default = format("%sa", var.region)
+}

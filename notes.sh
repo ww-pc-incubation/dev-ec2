@@ -7,3 +7,7 @@ terraform -chdir=vpc validate
 terraform -chdir=vpc plan -out /tmp/vpc-plan-$$ 
 terraform -chdir=vpc apply /tmp/vpc-plan-$$ 
 vpc_id=$(terraform -chdir=vpc output -json outs | jq -r '.private_subnet_ids[0]')
+terraform -chdir=instance  init -backend-config="bucket=$bucket_name"
+terraform -chdir=instance validate
+terraform -chdir=instance plan -out /tmp/vpc-plan-$$ 
+terraform -chdir=instance apply /tmp/vpc-plan-$$ 

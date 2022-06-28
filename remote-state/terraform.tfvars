@@ -1,6 +1,6 @@
 region = "eu-west-1"
 
-tags = {
+default_tags = {
   "Managed by Terraform" = "True"
   "Environment" = "CX"
   "Owner" = "paul.carlton@weave.works"

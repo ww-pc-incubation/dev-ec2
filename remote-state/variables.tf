@@ -2,8 +2,11 @@ variable "region" {
   type = string
 }
 
-variable "tags" {
+variable "default_tags" {
   type = map(string)
+  default = {
+    "Managed by Terraform" = "True"
+  }
 }
 
 variable "bucket_name" {

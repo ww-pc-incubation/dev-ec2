@@ -4,8 +4,8 @@ prefix_name = "paulcarlton"
 
 default_tags = {
   "Managed by Terraform" = "True"
-  "Environment" = "Production"
-  "Owner" = "Corporate IT"
+  "Environment" = "CX"
+  "Owner" = "paul.carlton@weave.works"
 }
 
 instance_name = "dev-one"
