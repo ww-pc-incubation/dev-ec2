@@ -11,3 +11,5 @@ default_tags = {
 instance_name = "dev-one"
 
 ssh_key = "paul"
+
+iam_role = "paulcarlton-ec2"

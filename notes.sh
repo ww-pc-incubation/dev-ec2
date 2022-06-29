@@ -12,5 +12,5 @@ public_subnet_id=$(terraform -chdir=vpc output -json public_subnets | jq --arg z
 private_subnet_id=$(terraform -chdir=vpc output -json private_subnets | jq --arg z "$az" '.[$z]')
 terraform -chdir=instance  init -backend-config="bucket=$bucket_name" -backend-config="key=instance"
 terraform -chdir=instance validate
-terraform -chdir=instance plan -out /tmp/instance-plan-$$
+terraform -chdir=instance plan -out /tmp/instance-plan-$$ -var "public_subnet_id=$public_subnet_id"
 terraform -chdir=instance apply -auto-approve /tmp/instance-plan-$$ 

@@ -28,11 +28,10 @@ variable "ssm_enabled" {
 
 variable "iam_role" {
   type = string
-  default = "paulcarlton-ec2"
 }
 
-variable "private_subnet_id" {
-  description = "Private Subnet"
+variable "public_subnet_id" {
+  description = "Public subnet id"
   type = string
 }
 
