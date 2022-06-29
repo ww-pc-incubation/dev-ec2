@@ -13,7 +13,7 @@ variable "instance_name" {
   type = string
 }
 
-variable "name_prefix" {
+variable "prefix_name" {
   type = string
 }
 
@@ -23,13 +23,15 @@ variable "ssh_key" {
 
 variable "ssm_enabled" {
   type = string
+  default = true
 }
 
 variable "iam_role" {
   type = string
+  default = "paulcarlton-ec2"
 }
 
-variable "subnet_private" {
+variable "private_subnet_id" {
   description = "Private Subnet"
   type = string
 }
@@ -37,5 +39,5 @@ variable "subnet_private" {
 variable "availability_zone" {
   description = "Instance availability zone"
   type = string
-  default = format("%sa", var.region)
+  default = "a"
 }

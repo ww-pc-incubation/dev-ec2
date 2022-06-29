@@ -1,6 +1,6 @@
 output "outs" {
   value = {
-    "instance_public_ip" = module.ec2.public_id
+    "instance_id" = aws_instance.dev.id
   }
 }
 

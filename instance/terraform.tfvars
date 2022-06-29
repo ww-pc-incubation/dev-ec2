@@ -11,5 +11,3 @@ default_tags = {
 instance_name = "dev-one"
 
 ssh_key = "paul"
-
-
