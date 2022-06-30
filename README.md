@@ -4,7 +4,7 @@ This repository contains Terraform files for creating and ec2 instance.
 
 ## Setup
 
-Install [AWS CLI version 2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html).
+Install [AWS CLI version 2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html)
 Install [Terraform client](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
 Clone this repository, e.g.
@@ -16,18 +16,25 @@ To deploy an ec2 instance you need AWS credentials for and Admin user in the tar
 
 Create an S3 bucket to use for the Terraform state:
 
-    create-state-bucket.sh --bucket <bucket name> [--region <AWS region>]
+    terrafrom -chdir remote-state init
+    terraform -chdir=remote-state plan -out /tmp/plan-$$
+    terraform -chdir=remote-state apply "/tmp/plan-69027"
+    bucket_name=$(terraform -chdir=remote-state output -json outs | jq -r '.bucket_id')
 
-e.g.
+To deploy the instance:
 
-    create-state-bucket.sh --bucket tf-state --region $AWS_REGION
+    terraform -chdir=instance  init -backend-config="bucket=$bucket_name" -backend-config="key=instance"
+    terraform -chdir=instance validate
+    my_ip=$(curl -s ifconfig.me)
+    terraform -chdir=instance plan -out /tmp/instance-plan-$$ -var "source_ip=$my_ip"
+    terraform -chdir=instance apply -auto-approve /tmp/instance-plan-$$
 
-To deploy the resources:
+To access the instance:
 
-    terraform-init.sh
-    terraform-plan.sh
-    terraform-apply.sh
+    instance_id=$(terraform -chdir=instance output -json outs | jq -r '.instance_id')
+    region=${AWS_REGION:-$(aws configure get region)}
+    aws ssm start-session --region $region --target $instance_id
 
 To remove the resources:
 
-    terraform-destroy.sh
+    terraform -chdir=instance destroy -auto-approve -var "source_ip=$my_ip"

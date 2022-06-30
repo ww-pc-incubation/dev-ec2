@@ -30,13 +30,19 @@ variable "iam_role" {
   type = string
 }
 
-variable "public_subnet_id" {
-  description = "Public subnet id"
-  type = string
-}
-
 variable "availability_zone" {
   description = "Instance availability zone"
   type = string
   default = "a"
+}
+
+variable "source_ip" {
+  description = "IP Address to use on ssh ingress"
+  type = string
+}
+
+variable "user_data_file" {
+  description = "Instance cloud init script"
+  type = string
+  default = "../resources/cloud-init.sh"
 }
