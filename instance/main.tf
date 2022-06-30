@@ -64,7 +64,7 @@ resource "aws_instance" "dev" {
   tags = merge(var.default_tags, local.tags)
   availability_zone = format("%s%s", var.region, var.availability_zone)
   subnet_id = module.vpc.public_subnets[var.availability_zone]
-  user_data = var.user_data_file
+  user_data_base64 = var.user_data
 
   iam_instance_profile = aws_iam_instance_profile.profile.id
   vpc_security_group_ids = [aws_security_group.instance.id]

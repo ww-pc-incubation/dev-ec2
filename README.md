@@ -26,7 +26,7 @@ To deploy the instance:
     terraform -chdir=instance  init -backend-config="bucket=$bucket_name" -backend-config="key=instance"
     terraform -chdir=instance validate
     my_ip=$(curl -s ifconfig.me)
-    terraform -chdir=instance plan -out /tmp/instance-plan-$$ -var "source_ip=$my_ip"
+    terraform -chdir=instance plan -out /tmp/instance-plan-$$ -var "source_ip=$my_ip" -var "user_data=$(base64 resources/cloud-init.sh)"
     terraform -chdir=instance apply -auto-approve /tmp/instance-plan-$$
 
 To access the instance:
@@ -34,6 +34,11 @@ To access the instance:
     instance_id=$(terraform -chdir=instance output -json outs | jq -r '.instance_id')
     region=${AWS_REGION:-$(aws configure get region)}
     aws ssm start-session --region $region --target $instance_id
+
+or
+
+    ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
+    ssh -i <ssh private key file> ec2-user@$ec2_ip
 
 To remove the resources:
 

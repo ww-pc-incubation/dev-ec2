@@ -41,8 +41,8 @@ variable "source_ip" {
   type = string
 }
 
-variable "user_data_file" {
-  description = "Instance cloud init script"
+variable "user_data" {
+  description = "Instance cloud init script, base64 encoded"
   type = string
-  default = "../resources/cloud-init.sh"
+  default = ""
 }
