@@ -14,6 +14,14 @@ module "vpc" {
   region = var.region
 }
 
+module "bucket" {
+  source = "../modules/bucket"
+  prefix_name = var.prefix_name
+  bucket_name = "instance-config"
+  default_tags = var.default_tags
+  region = var.region
+}
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
 
