@@ -66,13 +66,19 @@ resource "aws_security_group" "instance" {
 
   tags = merge(var.default_tags, local.tags)
 }
+
+resource "local_file" "cloud_init" {
+    content  = "#!/usr/bin/env bash\naws s3 cp s3://${module.bucket.outs.bucket_id}/${module.bucket.outs.installer_key} /usr/local/bin/installer.sh\nchmod 755 /usr/local/bin/installer.sh\naws s3 cp s3://${module.bucket.outs.bucket_id}/${module.bucket.outs.bashrc_key} /etc/bashrc.sh\n/usr/local/bin/installer.sh"
+    filename = "/tmp/cloud-init.sh"
+}
+
 resource "aws_instance" "dev" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.large"
   tags = merge(var.default_tags, local.tags)
   availability_zone = format("%s%s", var.region, var.availability_zone)
   subnet_id = module.vpc.public_subnets[var.availability_zone]
-  user_data_base64 = var.user_data
+  user_data_base64 = base64encode(local_file.cloud_init.content)
 
   iam_instance_profile = aws_iam_instance_profile.profile.id
   vpc_security_group_ids = [aws_security_group.instance.id]

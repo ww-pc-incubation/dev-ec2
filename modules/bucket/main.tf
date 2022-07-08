@@ -11,9 +11,9 @@ resource "aws_s3_bucket" "instance_config" {
 
   tags = merge(var.default_tags, local.tags)
 
-  lifecycle {
-      prevent_destroy = true
-  }
+  # lifecycle {
+  #     prevent_destroy = true
+  # }
 
 }
 
@@ -51,9 +51,12 @@ resource "aws_s3_object" "bashrc" {
   bucket = aws_s3_bucket.instance_config.id
   key    = "bashrc"
   source = var.bashrc_file
-
-  # The filemd5() function is available in Terraform 0.11.12 and later
-  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
-  # etag = "${md5(file("path/to/file"))}"
   source_hash = filemd5(var.bashrc_file)
+}
+
+resource "aws_s3_object" "installer" {
+  bucket = aws_s3_bucket.instance_config.id
+  key    = "installer"
+  source = var.installer_file
+  source_hash = filemd5(var.installer_file)
 }

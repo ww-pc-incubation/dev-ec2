@@ -21,3 +21,8 @@ variable "bashrc_file" {
   type = string
   default = "../resources/bashrc.sh"
 }
+
+variable "installer_file" {
+  type = string
+  default = "../resources/installer.sh"
+}
