@@ -1,7 +1,7 @@
 apiVersion: anywhere.eks.amazonaws.com/v1alpha1
 kind: Cluster
 metadata:
-name: eksa-bootstrap
+  name: eksa-bootstrap
 spec:
   # OIDC support
   # identityProviderRefs:
@@ -49,5 +49,5 @@ spec:
 apiVersion: anywhere.eks.amazonaws.com/v1alpha1
 kind: DockerDatacenterConfig
 metadata:
-name: eksa-bootstrap
+  name: eksa-bootstrap
 spec: {}
