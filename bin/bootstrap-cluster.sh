@@ -32,24 +32,25 @@ pushd /etc
 # aws s3 cp --acl public-read ./discovery.json s3://$CONFIG_BUCKET/.well-known/openid-configuration
 
 eksctl anywhere create cluster -f /etc/ec2-dev/eksa-bootstrap.yaml
-export KUBECONFIG=${PWD}/eksa-bootstrap/eksa-bootstrap-eks-a-cluster.kubeconfig
-chmod 644 ${PWD}/eksa-bootstrap/eksa-bootstrap-eks-a-cluster.kubeconfig
-mv ${PWD}/eksa-bootstrap/eksa-bootstrap-eks-a-cluster.kubeconfig /etc/eksa-bootstrap/eksa-bootstrap.kubeconfig
+chmod 644 ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig
+mv ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig /etc/ec2-dev/eksa-bootstrap.kubeconfig
+export KUBECONFIG=/etc/ec2-dev/eksa-bootstrap.kubeconfig
 export GITHUB_TOKEN="$(GetParamValue ${GITHUB_TOKEN_SSM_PARAM})"
 
 gh repo create $MGMT_ORG/$MGMT_REPO --public
 mkdir  -p /home/ec2-user/go/src/github.com/$MGMT_ORG/$MGMT_REPO
-chown -R ec2-user /home/ec2-user/go/github.com
+chown -R ec2-user:ec2-user /home/ec2-user
 cd /home/ec2-user/go/src/github.com/$MGMT_ORG/$MGMT_REPO
 git init
 echo "# Management cluster" > README.md
+mkdir -p clusters/bootstrap
 touch clusters/bootstrap/.keep
+mkdir -p clusters/mgmt
 touch clusters/mgmt/.keep
 git add -A
 git commit --all --message "init commit"
 git branch -M main
-git remote add origin git@github.com:$MGMT_ORG/$MGMT_REPO.git
-git push -u origin main
-chown -R ec2-user /home/ec2-user/go/github.com/$MGMT_ORG/$MGMT_REPO
+git push --set-upstream https://$GITHUB_TOKEN@github.com/$MGMT_ORG/$MGMT_REPO.git main
+chown -R ec2-user:ec2-user /home/ec2-user/go/src/github.com/$MGMT_ORG/$MGMT_REPO
 flux bootstrap github --owner=$MGMT_ORG --repository=$MGMT_REPO --private=false --personal=false --path clusters/bootstrap
 popd

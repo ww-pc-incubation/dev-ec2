@@ -117,7 +117,7 @@ resource "local_file" "cloud_init" {
     chmod 755 /usr/local/bin
 
     echo "export CONFIG_BUCKET=${module.bucket.outs.bucket_id}" > /etc/ec2-dev/aws-config.sh
-    echo "export GITHUB_SSM_PARAM=${aws_ssm_parameter.github.name}" >> /etc/ec2-dev/aws-config.sh
+    echo "export GITHUB_TOKEN_SSM_PARAM=${aws_ssm_parameter.github.name}" >> /etc/ec2-dev/aws-config.sh
     echo "export MGMT_ORG=${var.mgmt_org}" >> /etc/ec2-dev/aws-config.sh
     echo "export MGMT_REPO=${local.mgmt_repo}" >> /etc/ec2-dev/aws-config.sh
     echo "export AWS_REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')" >> /etc/ec2-dev/aws-config.sh
