@@ -3,7 +3,6 @@
 source /etc/ec2-dev/aws-config.sh
 source /etc/ec2-dev/helper-functions.sh
 
-
 pushd /etc
 
 eksctl anywhere create cluster -f /etc/ec2-dev/eksa-bootstrap.yaml
