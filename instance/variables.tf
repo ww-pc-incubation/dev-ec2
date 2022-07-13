@@ -41,8 +41,14 @@ variable "source_ip" {
   type = string
 }
 
-variable "cloud_init" {
-  description = "Instance cloud init script"
+variable "github_token" {
+  description = "Github token"
   type = string
-  default = "../resources/cloud-init.sh"
+  default = ""
+}
+
+variable "mgmt_org" {
+  description = "Github organization to create the Management cluster repository in"
+  type = string
+  default = "ww-customer-test"
 }

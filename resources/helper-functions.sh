@@ -1,5 +1,37 @@
 #!/usr/bin/env bash
 
+export host_id=`hostname`
+
+function set-title(){
+  if [[ $OSTYPE == darwin* ]] ; then
+    echo -n -e "\033]0;$1\007"
+    return
+  fi
+  if [[ -z "$ORIG" ]]; then
+    ORIG=$PS1
+  fi
+  sep=""
+  if [[ -n "$*" ]] ; then
+    sep="-"
+  fi
+  TITLE="\[\e]2;$host_id$sep$*\a\]"
+  PS1=${ORIG}${TITLE}
+}
+
+function add_to_path() {
+    new_path="${1:-}"
+    if [ -z "${new_path}" ]; then
+        echo "no path provided"
+        return 1
+    fi
+
+    if { show-path.sh | grep -q "^${new_path}$"; }; then
+        echo "path already contains: $new_path"
+        return
+    fi
+    PATH="$PATH:${new_path}"
+}
+
 function SetAWSCreds () {
     INSTANCE_ROLE=$(aws sts get-caller-identity | jq -r '."Arn"' | cut -f 2 -d/)
     TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")

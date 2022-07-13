@@ -38,25 +38,37 @@ resource "aws_s3_bucket_acl" "private_bucket" {
   acl    = "private"
 }
 
-resource "aws_s3_bucket_public_access_block" "s3_public_access" {
-  bucket = aws_s3_bucket.instance_config.id
+# resource "aws_s3_bucket_public_access_block" "s3_public_access" {
+#   bucket = aws_s3_bucket.instance_config.id
 
-  block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
-  restrict_public_buckets = true
+#   block_public_acls   = true
+#   block_public_policy = true
+#   ignore_public_acls  = true
+#   restrict_public_buckets = true
+# }
+
+data "archive_file" "resources" {
+  type        = "zip"
+  source_dir  = "../resources"
+  output_path = "/tmp/resources.zip"
 }
 
-resource "aws_s3_object" "bashrc" {
+resource "aws_s3_object" "resources" {
   bucket = aws_s3_bucket.instance_config.id
-  key    = "bashrc"
-  source = var.bashrc_file
-  source_hash = filemd5(var.bashrc_file)
+  key    = "resources"
+  source = "${data.archive_file.resources.output_path}"
+  source_hash = filemd5("${data.archive_file.resources.output_path}")
 }
 
-resource "aws_s3_object" "installer" {
+data "archive_file" "utilities" {
+  type        = "zip"
+  source_dir  = "../bin"
+  output_path = "/tmp/utilities.zip"
+}
+
+resource "aws_s3_object" "utilities" {
   bucket = aws_s3_bucket.instance_config.id
-  key    = "installer"
-  source = var.installer_file
-  source_hash = filemd5(var.installer_file)
+  key    = "utilities"
+  source = "${data.archive_file.utilities.output_path}"
+  source_hash = filemd5("${data.archive_file.utilities.output_path}")
 }

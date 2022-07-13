@@ -3,35 +3,18 @@ set -x
 
 export PATH=$PATH:/usr/local/bin
 
-amazon-linux-extras install epel -y
+install-awscli.sh
 
-echo "Updating system packages & installing required utilities"
-yum-config-manager --enable epel
-yum update -y
-yum install -y jq curl unzip git
-curl $curl_proxy_opt "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
-sudo yum install -y session-manager-plugin.rpm
-
-echo "Installing AWS CLI"
-TMPDIR=$(mktemp -d)
-cd $TMPDIR
-echo "Downloading AWS CLI"
-curl $curl_proxy_opt "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip -q awscliv2.zip >/dev/null
-./aws/install >/dev/null
-
-echo "Installing SSM Agent"
-yum install -y https://s3.$AWS_REGION.amazonaws.com/amazon-ssm-$AWS_REGION/latest/linux_amd64/amazon-ssm-agent.rpm
-systemctl enable amazon-ssm-agent
-systemctl start amazon-ssm-agent
-systemctl status amazon-ssm-agent
+s3-download.sh
 
 curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/aws-iam-authenticator
 chmod +x ./aws-iam-authenticator
 mv ./aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+
 curl -LO "https://dl.k8s.io/release/v1.22.9/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
+
 sudo yum install -y docker
 sudo usermod -a -G docker ec2-user
 id ec2-user
@@ -54,6 +37,21 @@ curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | ba
 
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh v4.5.5 /usr/local/bin"  | bash /usr/local/bin
 
-if [ -f /etc/bashrc.sh ]; then
-  cat /etc/bashrc.sh >> /home/ec2-user/.bashrc
+curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+    --silent --location \
+    | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin/
+
+export EKSA_RELEASE="0.10.1" OS="$(uname -s | tr A-Z a-z)" RELEASE_NUMBER=15
+curl "https://anywhere-assets.eks.amazonaws.com/releases/eks-a/${RELEASE_NUMBER}/artifacts/eks-a/v${EKSA_RELEASE}/${OS}/amd64/eksctl-anywhere-v${EKSA_RELEASE}-${OS}-amd64.tar.gz" \
+    --silent --location \
+    | tar xz ./eksctl-anywhere
+sudo mv ./eksctl-anywhere /usr/local/bin/
+
+wget https://github.com/cli/cli/releases/download/v2.14.1/gh_2.14.1_linux_386.rpm
+sudo rpm -i gh_2.14.1_linux_386.rpm
+
+if [ -f /etc/ec2-dev/bashrc.sh ]; then
+  cat /etc/ec2-dev/bashrc.sh >> /home/ec2-user/.bashrc
 fi
+

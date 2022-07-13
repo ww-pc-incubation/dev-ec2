@@ -21,13 +21,13 @@ Create an S3 bucket to use for the Terraform state:
 ```bash
 terrafrom -chdir remote-state init
 terraform -chdir=remote-state plan -out /tmp/plan-$$
-terraform -chdir=remote-state apply "/tmp/plan-69027"
-bucket_name=$(terraform -chdir=remote-state output -json outs | jq -r '.bucket_id')
+terraform -chdir=remote-state apply "/tmp/plan-$$"
 ```
 
 To deploy the instance:
 
 ```bash
+bucket_name=$(terraform -chdir=remote-state output -json outs | jq -r '.bucket_id')
 terraform -chdir=instance  init -backend-config="bucket=$bucket_name" -backend-config="key=instance"
 terraform -chdir=instance validate
 my_ip=$(curl -s ifconfig.me)
@@ -46,8 +46,10 @@ aws ssm start-session --region $region --target $instance_id
 or
 
 ```bash
+AWS_PRIV_KEY=<path to private key file>
 ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
-ssh -i <ssh private key file> ec2-user@$ec2_ip
+ssh-keyscan -H $ec2_ip >> ~/.ssh/known_hosts
+ssh -i $AWS_PRIV_KEY -o "StrictHostKeyChecking no" ec2-user@$ec2_ip
 ```
 
 To remove the resources:

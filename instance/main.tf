@@ -1,6 +1,8 @@
 
 
 locals {
+  mgmt_repo = format("%s-%s-mgmt", var.prefix_name, var.instance_name)
+  ssm_param_path = format("/%s/%s", var.prefix_name, var.instance_name)
   tags = {
     "Name" = format("%s-%s", var.prefix_name, var.instance_name)
   }
@@ -67,8 +69,77 @@ resource "aws_security_group" "instance" {
   tags = merge(var.default_tags, local.tags)
 }
 
+
+resource "aws_ssm_parameter" "github" {
+  name        = format("%s/github-token", local.ssm_param_path)
+  description = "Github token"
+  type        = "SecureString"
+  value       = var.github_token
+  tags = merge(var.default_tags, local.tags)
+}
+
 resource "local_file" "cloud_init" {
-    content  = "#!/usr/bin/env bash\naws s3 cp s3://${module.bucket.outs.bucket_id}/${module.bucket.outs.installer_key} /usr/local/bin/installer.sh\nchmod 755 /usr/local/bin/installer.sh\naws s3 cp s3://${module.bucket.outs.bucket_id}/${module.bucket.outs.bashrc_key} /etc/bashrc.sh\n/usr/local/bin/installer.sh"
+    content  = <<-EOT
+    #!/usr/bin/env bash
+
+    set -x
+
+    export PATH=$PATH:/usr/local/bin
+
+    amazon-linux-extras install epel -y
+
+    echo "Updating system packages & installing required utilities"
+    yum-config-manager --enable epel
+    yum update -y
+    yum install -y jq curl unzip git
+    curl $curl_proxy_opt "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+    sudo yum install -y session-manager-plugin.rpm
+
+    echo "#!/usr/bin/env bash" > /usr/local/install-awscli.sh
+    echo "TMPDIR=$(mktemp -d)" >> /usr/local/install-awscli.sh
+    echo "pushd $TMPDIR" >> /usr/local/install-awscli.sh
+    echo 'curl $curl_proxy_opt "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"' >> /usr/local/install-awscli.sh
+    echo "unzip -q awscliv2.zip >/dev/null" >> /usr/local/install-awscli.sh
+    echo "./aws/install >/dev/null" >> /usr/local/install-awscli.sh
+    echo "popd" >> /usr/local/install-awscli.sh
+    chmod 755 /usr/local/install-awscli.sh
+    /usr/local/install-awscli.sh
+
+    echo "Installing SSM Agent"
+    yum install -y https://s3.$AWS_REGION.amazonaws.com/amazon-ssm-$AWS_REGION/latest/linux_amd64/amazon-ssm-agent.rpm
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+    systemctl status amazon-ssm-agent
+
+    mkdir /etc/ec2-dev
+    chmod 755 /etc/ec2-dev
+    mkdir /usr/local/bin
+    chmod 755 /usr/local/bin
+
+    echo "export CONFIG_BUCKET=${module.bucket.outs.bucket_id}" > /etc/ec2-dev/aws-config.sh
+    echo "export GITHUB_SSM_PARAM=${aws_ssm_parameter.github.name}" >> /etc/ec2-dev/aws-config.sh
+    echo "export MGMT_ORG=${var.mgmt_org}" >> /etc/ec2-dev/aws-config.sh
+    echo "export MGMT_REPO=${local.mgmt_repo}" >> /etc/ec2-dev/aws-config.sh
+    echo "export AWS_REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')" >> /etc/ec2-dev/aws-config.sh
+
+    echo '#!/usr/bin/env bash' > /usr/local/bin/s3-download.sh
+    echo 'source /etc/ec2-dev/aws-config.sh' >> /usr/local/bin/s3-download.sh
+    echo 'aws s3 cp s3://$CONFIG_BUCKET/${module.bucket.outs.resources_key} /tmp/resources.zip' >> /usr/local/bin/s3-download.sh
+    echo 'unzip -d /etc/ec2-dev /tmp/resources.zip' >> /usr/local/bin/s3-download.sh
+    echo 'chmod 644 /etc/ec2-dev/*' >> /usr/local/bin/s3-download.sh
+    echo 'chown -R root:root /etc/ec2-dev' >> /usr/local/bin/s3-download.sh
+    echo 'aws s3 cp s3://$CONFIG_BUCKET/${module.bucket.outs.utilities_key} /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
+    echo 'unzip -d /usr/local/bin /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
+    echo 'chmod 755 /usr/local/bin/*' >> /usr/local/bin/s3-download.sh
+    echo 'chown -R root:root /usr/local/bin' >> /usr/local/bin/s3-download.sh
+
+    chmod 755 /usr/local/bin/s3-download.sh
+    chown root:root /usr/local/bin/s3-download.sh
+    export PATH=$PATH:/usr/local/bin
+    s3-download.sh
+    installer.sh
+    bootstrap-cluster.sh
+    EOT
     filename = "/tmp/cloud-init.sh"
 }
 
@@ -90,4 +161,3 @@ resource "aws_instance" "dev" {
     delete_on_termination = true
   }
 }
-
