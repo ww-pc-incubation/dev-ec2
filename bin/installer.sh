@@ -20,22 +20,26 @@ sudo usermod -a -G docker ec2-user
 id ec2-user
 sudo systemctl enable docker.service
 sudo systemctl start docker.service
+
 curl -s https://fluxcd.io/install.sh | sudo bash
 
 curl -LO https://go.dev/dl/go1.18.3.linux-amd64.tar.gz
-rm -rf /usr/local/go && tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 
 # download kubebuilder and install locally.
 curl -s -L -o kubebuilder https://go.kubebuilder.io/dl/latest/$(go env GOOS)/$(go env GOARCH)
-chmod +x kubebuilder && mv kubebuilder /usr/local/bin/
-sudo yum install golang -y
+chmod +x kubebuilder && sudo mv kubebuilder /usr/local/bin/
 
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin v1.46.2
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.46.2
 
-curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | sudo bash
 
-curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh v4.5.5 /usr/local/bin"  | bash /usr/local/bin
+if [ -f kustomize ]; then
+  sudo rm -f kustomize
+fi
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh v4.5.5 | bash
+sudo mv kustomize /usr/local/bin
 
 curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
     --silent --location \
@@ -50,6 +54,24 @@ sudo mv ./eksctl-anywhere /usr/local/bin/
 
 wget https://github.com/cli/cli/releases/download/v2.14.1/gh_2.14.1_linux_386.rpm
 sudo rpm -i gh_2.14.1_linux_386.rpm
+
+curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.1.5/clusterctl-linux-amd64 -o clusterctl
+chmod +x ./clusterctl
+sudo mv ./clusterctl /usr/local/bin/clusterctl
+
+curl -L https://github.com/kubernetes-sigs/cluster-api-provider-aws/releases/download/v1.4.1/clusterawsadm-linux-amd64 -o clusterawsadm
+chmod +x ./clusterawsadm
+sudo mv ./clusterawsadm /usr/local/bin/clusterawsadm
+
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+
+sudo sh -c 'echo -e "[azure-cli]
+name=Azure CLI
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+sudo yum install azure-cli -y
 
 if [ -f /etc/ec2-dev/bashrc.sh ]; then
   cat /etc/ec2-dev/bashrc.sh >> /home/ec2-user/.bashrc
