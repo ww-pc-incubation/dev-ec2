@@ -31,6 +31,7 @@ bucket_name=$(terraform -chdir=remote-state output -json outs | jq -r '.bucket_i
 terraform -chdir=instance  init -backend-config="bucket=$bucket_name" -backend-config="key=instance"
 terraform -chdir=instance validate
 my_ip=$(curl -s ifconfig.me)
+export TF_VAR_github_token=$GITHUB_TOKEN
 terraform -chdir=instance plan -out /tmp/instance-plan-$$ -var "source_ip=$my_ip"
 terraform -chdir=instance apply -auto-approve /tmp/instance-plan-$$
 ```
@@ -46,14 +47,15 @@ aws ssm start-session --region $region --target $instance_id
 or
 
 ```bash
-AWS_PRIV_KEY=<path to private key file>
+PRIV_KEY=<path to private key file>
 ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
 ssh-keyscan -H $ec2_ip >> ~/.ssh/known_hosts
-ssh -i $AWS_PRIV_KEY -o "StrictHostKeyChecking no" ec2-user@$ec2_ip
+ssh -i $PRIV_KEY -o "StrictHostKeyChecking no" ec2-user@$ec2_ip
 ```
 
 To remove the resources:
 
 ```bash
+my_ip=$(curl -s ifconfig.me)
 terraform -chdir=instance destroy -auto-approve -var "source_ip=$my_ip"
 ```

@@ -6,4 +6,4 @@ command -v kubectl >/dev/null &&  source <(kubectl completion bash)
 command -v flux >/dev/null && . <(flux completion bash)
 command -v kubebuilder >/dev/null && . <(kubebuilder completion bash)
 
-export KUBECONFIG=/etc/ec2-dev/eksa-bootstrap.kubeconfig
+export KUBECONFIG=/etc/ec2-dev/kind-bootstrap.kubeconfig

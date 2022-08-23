@@ -2,6 +2,7 @@
 set -x
 
 export PATH=$PATH:/usr/local/bin
+env
 
 install-awscli.sh
 
@@ -33,12 +34,12 @@ chmod +x kubebuilder && sudo mv kubebuilder /usr/local/bin/
 
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.46.2
 
-curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | sudo bash
+sudo -E curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash 
 
 if [ -f kustomize ]; then
   sudo rm -f kustomize
 fi
-curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh v4.5.5 | bash
+curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh v4.5.5 | bash
 sudo mv kustomize /usr/local/bin
 
 curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
@@ -46,11 +47,18 @@ curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(una
     | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin/
 
-export EKSA_RELEASE="0.10.1" OS="$(uname -s | tr A-Z a-z)" RELEASE_NUMBER=15
+export EKSA_RELEASE="0.10.1"
+export OS="$(uname -s | tr A-Z a-z)"
+export RELEASE_NUMBER=15
+env
 curl "https://anywhere-assets.eks.amazonaws.com/releases/eks-a/${RELEASE_NUMBER}/artifacts/eks-a/v${EKSA_RELEASE}/${OS}/amd64/eksctl-anywhere-v${EKSA_RELEASE}-${OS}-amd64.tar.gz" \
     --silent --location \
     | tar xz ./eksctl-anywhere
 sudo mv ./eksctl-anywhere /usr/local/bin/
+
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
 
 wget https://github.com/cli/cli/releases/download/v2.14.1/gh_2.14.1_linux_386.rpm
 sudo rpm -i gh_2.14.1_linux_386.rpm
@@ -65,13 +73,15 @@ sudo mv ./clusterawsadm /usr/local/bin/clusterawsadm
 
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
-sudo sh -c 'echo -e "[azure-cli]
-name=Azure CLI
-baseurl=https://packages.microsoft.com/yumrepos/azure-cli
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
-sudo yum install azure-cli -y
+# sudo sh -c 'echo -e "[azure-cli]
+# name=Azure CLI
+# baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+# enabled=1
+# gpgcheck=1
+# gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+# sudo yum install azure-cli -y
+
+pip3 install azure-cli
 
 if [ -f /etc/ec2-dev/bashrc.sh ]; then
   cat /etc/ec2-dev/bashrc.sh >> /home/ec2-user/.bashrc

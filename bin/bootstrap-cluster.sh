@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
+set -x
 
 source /etc/ec2-dev/aws-config.sh
 source /etc/ec2-dev/helper-functions.sh
 
 pushd /etc
 
-eksctl anywhere create cluster -f /etc/ec2-dev/eksa-bootstrap.yaml
-chmod 644 ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig
-mv ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig /etc/ec2-dev/eksa-bootstrap.kubeconfig
-export KUBECONFIG=/etc/ec2-dev/eksa-bootstrap.kubeconfig
+#eksctl anywhere create cluster -f /etc/ec2-dev/eksa-bootstrap.yaml
+#chmod 644 ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig
+#mv ${PWD}/eksa-bootstrap/eksa-bootstrap.kubeconfig /etc/ec2-dev/eksa-bootstrap.kubeconfig
+#export KUBECONFIG=/etc/ec2-dev/eksa-bootstrap.kubeconfig
+
+export KUBECONFIG=/etc/ec2-dev/kind-bootstrap.kubeconfig
+kind create cluster --config /etc/ec2-dev/kind.yaml
+chmod 644 /etc/ec2-dev/kind-bootstrap.kubeconfig
+
 export GITHUB_TOKEN="$(GetParamValue ${GITHUB_TOKEN_SSM_PARAM})"
 
 gh repo create $MGMT_ORG/$MGMT_REPO --public
@@ -28,6 +34,7 @@ git push --set-upstream https://$GITHUB_TOKEN@github.com/$MGMT_ORG/$MGMT_REPO.gi
 chown -R ec2-user:ec2-user /home/ec2-user/go/src/github.com/$MGMT_ORG/$MGMT_REPO
 flux bootstrap github --owner=$MGMT_ORG --repository=$MGMT_REPO --private=false --personal=false --path clusters/bootstrap
 
+clusterawsadm bootstrap iam create-cloudformation-stack
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
 export EXP_EKS=true
 export EXP_MACHINE_POOL=true

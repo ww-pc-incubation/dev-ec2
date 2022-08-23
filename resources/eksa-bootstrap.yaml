@@ -28,7 +28,7 @@ spec:
   managementCluster:
     name: eksa-bootstrap
   workerNodeGroupConfigurations:
-  - count: 1
+  - count: 3
     name: md-0
 # ---
 # apiVersion: anywhere.eks.amazonaws.com/v1alpha1
