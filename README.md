@@ -60,14 +60,20 @@ Wait for the cloud init script to run `bootstrap-cluster.sh` and then `run wge-s
 
 To check for cluster configuration...
 
-```
+```bash
 sudo grep "Your management cluster has been initialized" /var/log/cloud-init-output.log
 ```
 
-Verify cluster using
+Verify cluster using...
 
-```
+```bash
 kubectl get pods -A
+```
+
+Then run WGE setup...
+
+```bash
+wge-setup.sh
 ```
 
 To remove the resources:
