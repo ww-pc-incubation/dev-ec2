@@ -21,7 +21,7 @@ chown ec2-user:ec2-user /home/ec2-user/.ssh/known_hosts
 
 gh repo create $MGMT_ORG/$MGMT_REPO --public
 
-flux bootstrap github --owner=$MGMT_ORG --repository=$MGMT_REPO --private=false --personal=false --path clusters/mgmt
+flux bootstrap github --owner=$MGMT_ORG --repository=$MGMT_REPO --private=false --personal=false --path clusters/management
 
 clusterawsadm bootstrap iam create-cloudformation-stack
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
