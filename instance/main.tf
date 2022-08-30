@@ -132,10 +132,13 @@ resource "local_file" "cloud_init" {
     echo 'unzip -d /usr/local/bin /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
     echo 'chmod 755 /usr/local/bin/*' >> /usr/local/bin/s3-download.sh
     echo 'chown -R root:root /usr/local/bin' >> /usr/local/bin/s3-download.sh
+    echo 'chmod 755 /usr/local/bin/*' >> /usr/local/bin/s3-download.sh
+    echo 'chown -R root:root /usr/local/bin' >> /usr/local/bin/s3-download.sh
 
     chmod 755 /usr/local/bin/s3-download.sh
     chown root:root /usr/local/bin/s3-download.sh
     export PATH=$PATH:/usr/local/bin
+    export HOME=/root
     s3-download.sh
     installer.sh
     bootstrap-cluster.sh

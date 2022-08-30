@@ -87,3 +87,10 @@ if [ -f /etc/ec2-dev/bashrc.sh ]; then
   cat /etc/ec2-dev/bashrc.sh >> /home/ec2-user/.bashrc
 fi
 
+wget https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.1/kubeseal-0.18.1-linux-amd64.tar.gz
+tar -xvzf kubeseal-0.18.1-linux-amd64.tar.gz kubeseal
+sudo install -m 755 kubeseal /usr/local/bin/kubeseal
+
+curl --silent --location "https://github.com/weaveworks/weave-gitops/releases/download/v0.9.3/gitops-$(uname)-$(uname -m).tar.gz" | tar xz -C /tmp
+sudo mv /tmp/gitops /usr/local/bin
+gitops version

@@ -48,9 +48,26 @@ or
 
 ```bash
 PRIV_KEY=<path to private key file>
+WGE_ENTITLEMENT_FILE=<path to WGE entitlement file>
 ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
 ssh-keyscan -H $ec2_ip >> ~/.ssh/known_hosts
+scp  ~/.gitconfig ec2-user@${ec2_ip}:
+[ -n "$WGE_ENTITLEMENT_FILE" ] && scp -i $PRIV_KEY -o "StrictHostKeyChecking no" $WGE_ENTITLEMENT_FILE ec2-user@${ec2_ip}:
 ssh -i $PRIV_KEY -o "StrictHostKeyChecking no" ec2-user@$ec2_ip
+```
+
+Wait for the cloud init script to run `bootstrap-cluster.sh` and then `run wge-setup.sh` to configure WGE management cluster.
+
+To check for cluster configuration...
+
+```
+sudo grep "Your management cluster has been initialized" /var/log/cloud-init-output.log
+```
+
+Verify cluster using
+
+```
+kubectl get pods -A
 ```
 
 To remove the resources:

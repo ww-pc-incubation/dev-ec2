@@ -8,13 +8,13 @@ set -euo pipefail
 
 function usage()
 {
-    echo "usage ${0} [--dry-run] [--debug] [--fork] <path>"
-    echo "where <path> is the repository path, i.e. github.com/weaveworks/weave-gitops"
-    echo " will also extract this from https or git repository urls"
-    echo "This script will create the appropriate directory sub tree under $HOME/go/src"
-    echo "then clones the repository if the final element of the path does not exist"
-    echo "if the repository directory already exists, it does a pull"
-    echo "defaults to using github.com if <path> is no a full url"
+    echo "usage ${0} [--dry-run] [--debug] [--fork] <path>" >&2
+    echo "where <path> is the repository path, i.e. github.com/weaveworks/weave-gitops" >&2
+    echo " will also extract this from https or git repository urls" >&2
+    echo "This script will create the appropriate directory sub tree under $HOME/go/src" >&2
+    echo "then clones the repository if the final element of the path does not exist" >&2
+    echo "if the repository directory already exists, it does a pull" >&2
+    echo "defaults to using github.com if <path> is no a full url" >&2
 }
 
 function args() {
@@ -35,7 +35,7 @@ function args() {
            "--help") usage; exit;;
                "-?") usage; exit;;
         *) if [ "${arg_list[${arg_index}]:0:2}" == "--" ];then
-               echo "invalid argument: ${arg_list[${arg_index}]}"
+               echo "invalid argument: ${arg_list[${arg_index}]}" >&2
                usage; exit
            fi;
            break;;
@@ -55,9 +55,7 @@ function args() {
     server=$(echo $path | cut -f1 -d/)
   fi
   if [[ "${path:(-4)}" == ".git" ]] ;then
-    echo "path=$path"
     path="${path::-4}"
-    echo "path=$path"
   fi
   path="$(echo "${path}" | sed 's#\:#/#')"
 }
@@ -74,13 +72,13 @@ if [ -n "${fork}" ] ; then
 fi
 
 if [ ! -e "${HOME}/go/src/${path}/.git" ] ; then
-    $dry_run mkdir -p "${HOME}/go/src/${path}"
-    $dry_run git clone git@${server}:"${org}"/"${repo}".git "${HOME}/go/src/${path}"
+    $dry_run mkdir -p "${HOME}/go/src/${path}" >&2
+    $dry_run git clone git@${server}:"${org}"/"${repo}".git "${HOME}/go/src/${path}" >&2
 fi
 
 echo "${HOME}/go/src/${path}"
 
-$dry_run git -C "${HOME}/go/src/${path}" pull
+$dry_run git -C "${HOME}/go/src/${path}" pull >&2
 
 
 

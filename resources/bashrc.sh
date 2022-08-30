@@ -8,7 +8,10 @@ command -v kubebuilder >/dev/null && . <(kubebuilder completion bash)
 
 export KUBECONFIG=/etc/ec2-dev/kind-bootstrap.kubeconfig
 
+mkdir -p info # Create directory for secrets
+
 source /etc/ec2-dev/aws-config.sh
 source /etc/ec2-dev/helper-functions.sh
 
 export GITHUB_TOKEN="$(GetParamValue ${GITHUB_TOKEN_SSM_PARAM})"
+
