@@ -47,16 +47,8 @@ resource "aws_iam_instance_profile" "profile" {
 
 resource "aws_security_group" "instance" {
   name        = "allow_tls"
-  description = "Allow TLS inbound traffic"
+  description = "Allow ssh and k8s inbound traffic"
   vpc_id      = module.vpc.vpc.vpc_id
-
-  ingress {
-    description      = "TLS from VPC"
-    from_port        = 22
-    to_port          = 22
-    protocol         = "tcp"
-    cidr_blocks      = [format("%s/32",var.source_ip)]
-  }
 
   egress {
     from_port        = 0
@@ -69,6 +61,36 @@ resource "aws_security_group" "instance" {
   tags = merge(var.default_tags, local.tags)
 }
 
+resource "aws_security_group_rule" "k8s" {
+  description      = "k8s from client"
+  from_port        = 6443
+  to_port          = 6443
+  protocol         = "tcp"
+  cidr_blocks      = [format("%s/32",var.source_ip)]
+  security_group_id = aws_security_group.instance.id
+  type = "ingress"
+}
+
+resource "aws_security_group_rule" "k8s-internal" {
+  description      = "k8s on public ip from instance"
+  from_port        = 6443
+  to_port          = 6443
+  protocol         = "tcp"
+  source_security_group_id = aws_security_group.instance.id
+  security_group_id = aws_security_group.instance.id
+  type = "ingress"
+}
+
+
+resource "aws_security_group_rule" "ssh" {
+  description      = "k8s from client"
+  from_port        = 22
+  to_port          = 22
+  protocol         = "tcp"
+  cidr_blocks      = [format("%s/32",var.source_ip)]
+  security_group_id = aws_security_group.instance.id
+  type = "ingress"
+}
 
 resource "aws_ssm_parameter" "github" {
   name        = format("%s/github-token", local.ssm_param_path)
@@ -125,11 +147,11 @@ resource "local_file" "cloud_init" {
     echo '#!/usr/bin/env bash' > /usr/local/bin/s3-download.sh
     echo 'source /etc/ec2-dev/aws-config.sh' >> /usr/local/bin/s3-download.sh
     echo 'aws s3 cp s3://$CONFIG_BUCKET/${module.bucket.outs.resources_key} /tmp/resources.zip' >> /usr/local/bin/s3-download.sh
-    echo 'unzip -d /etc/ec2-dev /tmp/resources.zip' >> /usr/local/bin/s3-download.sh
+    echo 'unzip -o -d /etc/ec2-dev /tmp/resources.zip' >> /usr/local/bin/s3-download.sh
     echo 'chmod 644 /etc/ec2-dev/*' >> /usr/local/bin/s3-download.sh
     echo 'chown -R root:root /etc/ec2-dev' >> /usr/local/bin/s3-download.sh
     echo 'aws s3 cp s3://$CONFIG_BUCKET/${module.bucket.outs.utilities_key} /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
-    echo 'unzip -d /usr/local/bin /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
+    echo 'unzip -o -d /usr/local/bin /tmp/utilities.zip' >> /usr/local/bin/s3-download.sh
     echo 'chmod 755 /usr/local/bin/*' >> /usr/local/bin/s3-download.sh
     echo 'chown -R root:root /usr/local/bin' >> /usr/local/bin/s3-download.sh
     echo 'chmod 755 /usr/local/bin/*' >> /usr/local/bin/s3-download.sh

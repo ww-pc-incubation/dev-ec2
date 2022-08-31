@@ -82,3 +82,14 @@ To remove the resources:
 my_ip=$(curl -s ifconfig.me)
 terraform -chdir=instance destroy -auto-approve -var "source_ip=$my_ip"
 ```
+
+## Client Configuration
+
+To configure your local machine to use this instance add an entry to /etc/hosts for the instance, then add the Host to your `.ssh/config` file
+
+```bash
+Host <host name>
+  HostName <host name>
+  User ec2-user
+  IdentityFile <path to private key file>
+```

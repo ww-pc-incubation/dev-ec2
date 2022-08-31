@@ -3,10 +3,15 @@ set -x
 
 template_dir="$(clone.sh github.com/ww-pc-incubation/wge-gitops-template)"
 cd `clone.sh github.com/$MGMT_ORG/$MGMT_REPO`
+
 cp -rf ${template_dir}/addons clusters/management
 git add -A;git commit -a -m "deploy standard addons"; git push
 flux reconcile source git flux-system -n flux-system 
 flux reconcile kustomization flux-system -n flux-system 
+
+echo " Waiting for Sealed Seacret Controller to be ready"
+sleep 5
+kubectl wait deployment -n kube-system sealed-secrets-controller --for condition=Available=True
 
 kubeseal --fetch-cert > clusters/management/pub-cert.pem
 kubeseal --format=yaml --cert=clusters/management/pub-cert.pem < ~/entitlement.yaml > clusters/management/addons/wge-entitlement.yaml
@@ -17,7 +22,7 @@ flux reconcile kustomization flux-system -n flux-system
 ADMIN_PASSWORD="$(date +%s | sha256sum | base64 | head -c 10)"
 BCRYPT_PASSWD=$(echo -n $ADMIN_PASSWORD | gitops get bcrypt-hash)
 
-kubectl create secret --dry-run generic cluster-user-auth \
+kubectl create secret generic cluster-user-auth \
   --namespace flux-system \
   --from-literal=username=wego-admin \
   --from-literal=password="$BCRYPT_PASSWD" \
@@ -36,5 +41,15 @@ done
 git add -A;git commit -a -m "add templated addons"; git push
 flux reconcile source git flux-system -n flux-system
 flux reconcile kustomization flux-system -n flux-system
+
+clusterawsadm bootstrap iam create-cloudformation-stack
+export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
+export EXP_EKS=true
+export EXP_MACHINE_POOL=true
+export CAPA_EKS_IAM=true
+export EXP_CLUSTER_RESOURCE_SET=true
+
+
+clusterctl init --core=cluster-api:v1.1.3 --infrastructure aws,azure -v 99
 
 echo "WGE Admin Password: $ADMIN_PASSWORD"
