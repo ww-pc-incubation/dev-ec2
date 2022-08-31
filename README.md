@@ -61,7 +61,7 @@ Wait for the cloud init script to run `bootstrap-cluster.sh` and then `run wge-s
 To check for cluster configuration...
 
 ```bash
-sudo grep "Your management cluster has been initialized" /var/log/cloud-init-output.log
+sudo grep "all components are healthy" /var/log/cloud-init-output.log
 ```
 
 Verify cluster using...

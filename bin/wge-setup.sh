@@ -49,7 +49,9 @@ export EXP_MACHINE_POOL=true
 export CAPA_EKS_IAM=true
 export EXP_CLUSTER_RESOURCE_SET=true
 
-
-clusterctl init --core=cluster-api:v1.1.3 --infrastructure aws,azure -v 99
+kubectl get deployments.apps  -n capi-system capi-controller-manager >/dev/null
+if [ "$?" != "0" ]; then
+  clusterctl init --core=cluster-api:v1.1.3 --infrastructure aws,azure -v 99
+fi
 
 echo "WGE Admin Password: $ADMIN_PASSWORD"
