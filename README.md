@@ -104,4 +104,19 @@ ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
 echo "$ec2_ip $instance_name" >> /tmp/hosts
 sudo sed -i "" "/${instance_name}$/d" /etc/hosts
 sudo bash -c 'cat /tmp/hosts >>/etc/hosts'
+ssh-keygen -R  $instance_name
+```
+Then you can access the host using
+
+```bash
+ssh -i $PRIV_KEY ec2-user@$instance_name
+```
+
+To setup client access to Kubernetes cluster
+
+```bash
+scp -i $PRIV_KEY ec2-user@$instance_name:/etc/ec2-dev/kind-bootstrap.kubeconfig ~/info/$instance_name-config.yaml 
+local_ip=$(ssh -i $PRIV_KEY ec2-user@$instance_name curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+sed -i "" "sGserver\:\ https\://$local_ip\:6443Gserver\:\ https\://$ec2_ip\:6443G" ~/info/$instance_name-config.yaml
+export KUBECONFIG=~/info/$instance_name-config.yaml
 ```
