@@ -2,7 +2,6 @@
 set -x
 
 export PATH=$PATH:/usr/local/bin
-env
 
 install-awscli.sh
 

@@ -12,6 +12,7 @@ mkdir -p info # Create directory for secrets
 
 source /etc/ec2-dev/aws-config.sh
 source /etc/ec2-dev/helper-functions.sh
+sudo /usr/local/bin/s3-download.sh
 
 export GITHUB_TOKEN="$(GetParamValue ${GITHUB_TOKEN_SSM_PARAM})"
 

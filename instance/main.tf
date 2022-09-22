@@ -81,6 +81,25 @@ resource "aws_security_group_rule" "k8s-internal" {
   type = "ingress"
 }
 
+resource "aws_security_group_rule" "http" {
+  description      = "http from client"
+  from_port        = 80
+  to_port          = 80
+  protocol         = "tcp"
+  cidr_blocks      = [format("%s/32",var.source_ip)]
+  security_group_id = aws_security_group.instance.id
+  type = "ingress"
+}
+
+resource "aws_security_group_rule" "https" {
+  description      = "https from client"
+  from_port        = 443
+  to_port          = 443
+  protocol         = "tcp"
+  cidr_blocks      = [format("%s/32",var.source_ip)]
+  security_group_id = aws_security_group.instance.id
+  type = "ingress"
+}
 
 resource "aws_security_group_rule" "ssh" {
   description      = "k8s from client"
@@ -117,15 +136,15 @@ resource "local_file" "cloud_init" {
     curl $curl_proxy_opt "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
     sudo yum install -y session-manager-plugin.rpm
 
-    echo "#!/usr/bin/env bash" > /usr/local/install-awscli.sh
-    echo "TMPDIR=$(mktemp -d)" >> /usr/local/install-awscli.sh
-    echo "pushd $TMPDIR" >> /usr/local/install-awscli.sh
-    echo 'curl $curl_proxy_opt "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"' >> /usr/local/install-awscli.sh
-    echo "unzip -q awscliv2.zip >/dev/null" >> /usr/local/install-awscli.sh
-    echo "./aws/install >/dev/null" >> /usr/local/install-awscli.sh
-    echo "popd" >> /usr/local/install-awscli.sh
-    chmod 755 /usr/local/install-awscli.sh
-    /usr/local/install-awscli.sh
+    echo "#!/usr/bin/env bash" > /usr/local/bin/install-awscli.sh
+    echo "TMPDIR=$(mktemp -d)" >> /usr/local/bin/install-awscli.sh
+    echo "pushd $TMPDIR" >> /usr/local/bin/install-awscli.sh
+    echo 'curl $curl_proxy_opt "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"' >> /usr/local/bin/install-awscli.sh
+    echo "unzip -q awscliv2.zip >/dev/null" >> /usr/local/bin/install-awscli.sh
+    echo "./aws/install >/dev/null" >> /usr/local/bin/install-awscli.sh
+    echo "popd" >> /usr/local/bin/install-awscli.sh
+    chmod 755 /usr/local/bin/install-awscli.sh
+    /usr/local/bin/install-awscli.sh
 
     echo "Installing SSM Agent"
     yum install -y https://s3.$AWS_REGION.amazonaws.com/amazon-ssm-$AWS_REGION/latest/linux_amd64/amazon-ssm-agent.rpm

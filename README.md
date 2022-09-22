@@ -56,7 +56,7 @@ scp  ~/.gitconfig ec2-user@${ec2_ip}:
 ssh -i $PRIV_KEY -o "StrictHostKeyChecking no" ec2-user@$ec2_ip
 ```
 
-Wait for the cloud init script to run `bootstrap-cluster.sh` and then `run wge-setup.sh` to configure WGE management cluster.
+Wait for the cloud init script to run `bootstrap-cluster.sh` and then run `wge-setup.sh` to configure WGE management cluster.
 
 To check for cluster configuration...
 
@@ -92,4 +92,16 @@ Host <host name>
   HostName <host name>
   User ec2-user
   IdentityFile <path to private key file>
+```
+
+Alternatively add an entry to your /etc/hosts file for the instance name.
+
+```bash
+instance_id=$(terraform -chdir=instance output -json outs | jq -r '.instance_id')
+region=${AWS_REGION:-$(aws configure get region)}
+instance_name=$(aws ec2 describe-tags --filters "Name=resource-id,Values=${instance_id}" --region $region | jq -r '.Tags[] | select (."Key" == "Name")| .Value')
+ec2_ip=$(terraform -chdir=instance output -json outs | jq -r '.public_ip')
+echo "$ec2_ip $instance_name" >> /tmp/hosts
+sudo sed -i "" "/${instance_name}$/d" /etc/hosts
+sudo bash -c 'cat /tmp/hosts >>/etc/hosts'
 ```

@@ -42,7 +42,11 @@ git add -A;git commit -a -m "add templated addons"; git push
 flux reconcile source git flux-system -n flux-system
 flux reconcile kustomization flux-system -n flux-system
 
-clusterawsadm bootstrap iam create-cloudformation-stack
+aws iam get-role --role-name eks-controlplane.cluster-api-provider-aws.sigs.k8s.io >/dev/null 2>&1
+if [ "$?" != "0" ]; then
+  clusterawsadm bootstrap iam create-cloudformation-stack
+fi
+
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
 export EXP_EKS=true
 export EXP_MACHINE_POOL=true
