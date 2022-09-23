@@ -182,6 +182,7 @@ resource "local_file" "cloud_init" {
     export HOME=/root
     s3-download.sh
     installer.sh
+    web-server.sh
     bootstrap-cluster.sh
     EOT
     filename = "/tmp/cloud-init.sh"

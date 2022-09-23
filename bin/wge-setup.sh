@@ -9,7 +9,7 @@ git add -A;git commit -a -m "deploy standard addons"; git push
 flux reconcile source git flux-system -n flux-system 
 flux reconcile kustomization flux-system -n flux-system 
 
-echo " Waiting for Sealed Seacret Controller to be ready"
+echo " Waiting for Sealed Secret Controller to be ready"
 sleep 5
 kubectl wait deployment -n kube-system sealed-secrets-controller --for condition=Available=True
 

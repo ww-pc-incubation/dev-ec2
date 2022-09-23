@@ -17,17 +17,16 @@ nodes:
         - "127.0.0.1"
         - "$INSTANCE_IP"
         - "$INSTANCE_PUB"
-  - |
-    kind: InitConfigurtion
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+- role: worker
+  labels:
+    ingress-ready: true 
   extraPortMappings:
   - containerPort: 80
-    hostPort: 80
+    hostPort: 8080
+    listenAddress: "$INSTANCE_IP"
     protocol: TCP
   - containerPort: 443
-    hostPort: 443
+    hostPort: 4443
+    listenAddress: "$INSTANCE_IP"
     protocol: TCP
-- role: worker
 - role: worker

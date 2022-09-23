@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -x
 
+export PATH=$PATH:/usr/local/bin
+
 source /etc/ec2-dev/aws-config.sh
 source /etc/ec2-dev/helper-functions.sh
 
@@ -44,4 +46,3 @@ kubectl wait deployment -n tigera-operator tigera-operator --for condition=Avail
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
 
 flux bootstrap github --owner=$MGMT_ORG --repository=$MGMT_REPO --private=false --personal=false --path clusters/management
-

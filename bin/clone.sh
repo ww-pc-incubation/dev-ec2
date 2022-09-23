@@ -79,9 +79,3 @@ fi
 echo "${HOME}/go/src/${path}"
 
 $dry_run git -C "${HOME}/go/src/${path}" pull >&2
-
-
-
-
-
-
